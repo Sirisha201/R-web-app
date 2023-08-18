@@ -1,0 +1,39 @@
+kind: pipeline
+name: default
+
+steps:
+- name: build
+  image: docker:dind
+  volumes:
+    - name: dockersock
+      path: /var/run
+  commands:
+    - docker build -t my-shiny-app:latest .
+
+- name: test
+  image: my-shiny-app:latest
+  # If you have tests, run them here
+  commands:
+    - R -e "shiny::runApp('/srv/shiny-server/myapp', port=3838, host='0.0.0.0')"
+
+- name: deploy
+  image: pelotech/drone-elasticbeanstalk
+  settings:
+    access_key:
+      from_secret: aws_access_key_id
+    secret_key:
+      from_secret: aws_secret_access_key
+    region: us-east-1 # Update this to your region
+    application: my-shiny-app
+    env_name: MyShinyApp-env
+    version_label: ${DRONE_COMMIT_SHA}
+    description: ${DRONE_COMMIT_MESSAGE}
+    s3_bucket: elasticbeanstalk-us-east-1-312388070267
+    # zip_file: path-to-your-app.zip # Path to your app zipped
+
+volumes:
+- name: dockersock
+  host:
+    path: /var/run/docker.sock
+
+
