@@ -15,18 +15,13 @@ steps:
 - name: build and push
   group: build
   image: plugins/ecr
-  region: eu-north-1
-  repo: rshiny-repo
-  registry: 312388070267.dkr.ecr.eu-north-1.amazonaws.com
-  environment:
-    AWS_ACCESS_KEY_ID:
+  settings: 
+    access_key:
       from_secret: AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY:
+    secret_key:
       from_secret: AWS_SECRET_ACCESS_KEY
-  when:
-    branch: main
-    event: push
-
+    repo: rshiny-repo
+    registry: 312388070267.dkr.ecr.eu-north-1.amazonaws.com
 
 - name: pull-and-test
   image: docker
