@@ -12,7 +12,7 @@ steps:
     - name: dockersock
       path: /var/run/docker.sock
   commands:
-    - docker login -u AWS -p $(aws ecr get-login-password --region eu-north-1) 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo
+    - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
 
 - name: save-docker-image
