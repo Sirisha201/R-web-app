@@ -5,7 +5,7 @@ workspace:
   base: /workspace
   path: shared
 
-# steps:
+steps:
 # - name: pull-and-save-image
 #   image: python:3.8-alpine
 #   volumes:
