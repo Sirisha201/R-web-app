@@ -29,15 +29,18 @@ steps:
 
 
 - name: pull-and-test
-  image: docker
+  image: docker:dind
   environment:
     AWS_ACCESS_KEY_ID:
       from_secret: AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY:
       from_secret: AWS_SECRET_ACCESS_KEY
+  volumes:
+    - name: dockersock
+      path: /var/run/docker.sock
   commands:
-    - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:${DRONE_COMMIT:0:1}
-    - docker run -d -p 8080:80 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:${DRONE_COMMIT:0:1}
+    - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+    - docker run -d -p 8080:80 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
     - docker ps
   when:
     branch: main
