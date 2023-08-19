@@ -23,7 +23,7 @@ steps:
     AWS_SECRET_ACCESS_KEY:
       from_secret: AWS_SECRET_ACCESS_KEY
   tags:
-    - ${DRONE_COMMIT:0:1}
+    - ${DRONE_COMMIT:0:8}
   when:
     branch: main
     event: push
