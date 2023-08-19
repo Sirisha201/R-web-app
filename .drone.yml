@@ -12,20 +12,20 @@ steps:
 #     - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
 #     - docker build -t 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1 .
 #     - docker push 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1
-- name: build-and-push-to-ecr
-  image: plugins/ecr
-  settings:
-    access_key:
-      from_secret: AWS_ACCESS_KEY_ID
-    secret_key:
-      from_secret: AWS_SECRET_ACCESS_KEY
-    repo: 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo  # Replace with your ECR repository URL
-    registry: 312388070267.dkr.ecr.eu-north-1.amazonaws.com  # Replace with your ECR registry URL
-    region: eu-north-1  # Replace with your AWS region
-    auto_tag: true  # This option will use the Git commit SHA as the image tag
-    dockerfile: ./Dockerfile  # Path to your Dockerfile
-    tags:
-      - latest  # Additional tags you want to apply to the image
+# - name: build-and-push-to-ecr
+#   image: plugins/ecr
+#   settings:
+#     access_key:
+#       from_secret: AWS_ACCESS_KEY_ID
+#     secret_key:
+#       from_secret: AWS_SECRET_ACCESS_KEY
+#     repo: 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo  # Replace with your ECR repository URL
+#     registry: 312388070267.dkr.ecr.eu-north-1.amazonaws.com  # Replace with your ECR registry URL
+#     region: eu-north-1  # Replace with your AWS region
+#     auto_tag: true  # This option will use the Git commit SHA as the image tag
+#     dockerfile: ./Dockerfile  # Path to your Dockerfile
+#     tags:
+#       - latest  # Additional tags you want to apply to the image
 
 
 - name: pull-and-test
