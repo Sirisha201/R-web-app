@@ -26,7 +26,7 @@ steps:
     - echo $(aws ecr get-login-password --region eu-north-1) | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
     - docker save -o /workspace/shared/image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
-    - aws s3 cp /workspace/shared/image.tar s3://$S3_BUCKET/image.tar/
+    - aws s3 cp /workspace/shared/image.tar s3://$S3_BUCKET/
 
 volumes:
 - name: docker_sock
