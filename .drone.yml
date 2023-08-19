@@ -27,22 +27,22 @@ steps:
 #     tags:
 #       - latest  # Additional tags you want to apply to the image
 
-- name: Pull step
-  image: kudato/drone-ecr-pull
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-  settings:
-    region: us-east-1
-    access_key:
-      from_secret: AWS_ACCESS_KEY_ID
-    secret_key:
-      from_secret: AWS_SECRET_ACCESS_KEY
-    images: [
-      "312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest",
-    ]
-  commands: 
-  - docker ps
+# - name: Pull step
+#   image: kudato/drone-ecr-pull
+#   volumes:
+#   - name: docker
+#     path: /var/run/docker.sock
+#   settings:
+#     region: us-east-1
+#     access_key:
+#       from_secret: AWS_ACCESS_KEY_ID
+#     secret_key:
+#       from_secret: AWS_SECRET_ACCESS_KEY
+#     images: [
+#       "312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest",
+#     ]
+#   commands: 
+#   - docker ps
 
 # - name: pull-and-test
 #   image: docker:dind
@@ -70,8 +70,23 @@ steps:
 #     - R -e "shiny::runApp('/srv/shiny-server/myapp', port=3838, host='0.0.0.0')"
 
 steps:
+  # - name: pull-and-push
+  #   image: amazon/aws-cli
+  #   environment:
+  #     AWS_ACCESS_KEY_ID:
+  #       from_secret: AWS_ACCESS_KEY_ID
+  #     AWS_SECRET_ACCESS_KEY:
+  #       from_secret: AWS_SECRET_ACCESS_KEY
+  #     S3_BUCKET:
+  #       from_secret: AWS_S3_BUCKET
+  #   commands:
+  #     - aws configure set default.region us-east-1 # Set your desired AWS region
+  #     - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo
+  #     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+  #     - docker save -o image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest # Save the Docker image as a tarball
+  #     - aws s3 cp image.tar s3://S3_BUCKET/image.tar
   - name: pull-and-push
-    image: amazon/aws-cli
+    image: docker:20.10
     environment:
       AWS_ACCESS_KEY_ID:
         from_secret: AWS_ACCESS_KEY_ID
@@ -80,11 +95,13 @@ steps:
       S3_BUCKET:
         from_secret: AWS_S3_BUCKET
     commands:
+      - docker --version  # Check Docker version for verification
       - aws configure set default.region us-east-1 # Set your desired AWS region
       - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo
       - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
       - docker save -o image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest # Save the Docker image as a tarball
-      - aws s3 cp image.tar s3://S3_BUCKET/image.tar
+      - aws s3 cp image.tar s3://$S3_BUCKET/image.tar
+
 # - name: deploy
 #   image: pelotech/drone-elasticbeanstalk
 #   settings:
