@@ -8,7 +8,10 @@ steps:
     - name: dockersock
       path: /var/run/docker.sock
   commands:
-    - docker build -t my-shiny-app:latest .
+    - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
+    - docker build -t 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1 .
+    - docker push 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1
+
 
 - name: test
   image: my-shiny-app:latest
