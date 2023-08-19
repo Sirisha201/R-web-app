@@ -1,0 +1,140 @@
+kind: pipeline
+name: default
+
+steps:
+# - name: build
+#   group: build
+#   image: docker:dind
+#   volumes:
+#     - name: dockersock
+#       path: /var/run/docker.sock
+#   commands:
+#     - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
+#     - docker build -t 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1 .
+#     - docker push 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1
+# - name: build-and-push-to-ecr
+#   image: plugins/ecr
+#   settings:
+#     access_key:
+#       from_secret: AWS_ACCESS_KEY_ID
+#     secret_key:
+#       from_secret: AWS_SECRET_ACCESS_KEY
+#     repo: 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo  # Replace with your ECR repository URL
+#     registry: 312388070267.dkr.ecr.eu-north-1.amazonaws.com  # Replace with your ECR registry URL
+#     region: eu-north-1  # Replace with your AWS region
+#     auto_tag: true  # This option will use the Git commit SHA as the image tag
+#     dockerfile: ./Dockerfile  # Path to your Dockerfile
+#     tags:
+#       - latest  # Additional tags you want to apply to the image
+  - name: Pull and Save Image
+    image: docker:19.03.12
+    commands:
+      - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+      - docker save -o /tmp/image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    settings:
+      environment:
+        DOCKER_API_VERSION: "1.40"
+    artifact:
+      - /tmp/image.tar
+
+
+# - name: Pull step
+#   image: kudato/drone-ecr-pull
+#   volumes:
+#   - name: docker
+#     path: /var/run/docker.sock
+#   settings:
+#     region: us-east-1
+#     access_key:
+#       from_secret: AWS_ACCESS_KEY_ID
+#     secret_key:
+#       from_secret: AWS_SECRET_ACCESS_KEY
+#     images: [
+#       "312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest",
+#     ]
+#   commands: 
+#   - docker ps
+
+# - name: pull-and-test
+#   image: docker:dind
+#   environment:
+#     AWS_ACCESS_KEY_ID:
+#       from_secret: AWS_ACCESS_KEY_ID
+#     AWS_SECRET_ACCESS_KEY:
+#       from_secret: AWS_SECRET_ACCESS_KEY
+#   volumes:
+#     - name: dockersock
+#       path: /var/run/docker.sock
+#   commands:
+#     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+#     - docker run -d -p 8080:80 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+#     - docker ps
+#   when:
+#     branch: main
+#     event: push
+
+
+# - name: test
+#   image: my-shiny-app:latest
+#   # If you have tests, run them here
+#   commands:
+#     - R -e "shiny::runApp('/srv/shiny-server/myapp', port=3838, host='0.0.0.0')"
+
+steps:
+  # - name: pull-and-push
+  #   image: amazon/aws-cli
+  #   environment:
+  #     AWS_ACCESS_KEY_ID:
+  #       from_secret: AWS_ACCESS_KEY_ID
+  #     AWS_SECRET_ACCESS_KEY:
+  #       from_secret: AWS_SECRET_ACCESS_KEY
+  #     S3_BUCKET:
+  #       from_secret: AWS_S3_BUCKET
+  #   commands:
+  #     - aws configure set default.region us-east-1 # Set your desired AWS region
+  #     - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo
+  #     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+  #     - docker save -o image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest # Save the Docker image as a tarball
+  #     - aws s3 cp image.tar s3://S3_BUCKET/image.tar
+  # - name: pull-and-push
+  #   image: docker:20.10
+  #   environment:
+  #     AWS_ACCESS_KEY_ID:
+  #       from_secret: AWS_ACCESS_KEY_ID
+  #     AWS_SECRET_ACCESS_KEY:
+  #       from_secret: AWS_SECRET_ACCESS_KEY
+  #     S3_BUCKET:
+  #       from_secret: AWS_S3_BUCKET
+  #   commands:
+  #     - docker --version  # Check Docker version for verification
+  #     - aws configure set default.region us-east-1 # Set your desired AWS region
+  #     - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo
+  #     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+  #     - docker save -o image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest # Save the Docker image as a tarball
+  #     - aws s3 cp image.tar s3://$S3_BUCKET/image.tar
+  
+
+# - name: deploy
+#   image: pelotech/drone-elasticbeanstalk
+#   settings:
+#     access_key:
+#       from_secret: aws_access_key_id
+#     secret_key:
+#       from_secret: aws_secret_access_key
+#     region: us-east-1 # Update this to your region
+#     application: my-shiny-app
+#     env_name: MyShinyApp-env
+#     version_label: ${DRONE_COMMIT_SHA}
+#     description: ${DRONE_COMMIT_MESSAGE}
+#     s3_bucket: elasticbeanstalk-us-east-1-312388070267
+    # zip_file: path-to-your-app.zip # Path to your app zipped
+
+volumes:
+- name: dockersock
+  host:
+    path: /var/run/docker.sock
+
+
