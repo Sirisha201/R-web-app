@@ -6,31 +6,27 @@ workspace:
   path: shared
 
 steps:
-- name: Pull and Save Image
-  image: docker
+- name: pull-and-save-image
+  image: mesosphere/aws-cli
   volumes:
-  - name: docker
+  - name: docker_sock
     path: /var/run/docker.sock
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: AWS_SECRET_ACCESS_KEY
   commands:
+    - apk add --update docker
     - echo $(aws ecr get-login-password --region us-east-1) | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
     - docker save -o /workspace/shared/image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
-  
-
-# - name: save-docker-image
-#   image: docker:19.03
-#   volumes:
-#     - name: dockersock
-#       path: /var/run/docker.sock
-#   commands:
-#     - docker save -o /workspace/shared/image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
-
-# ... rest of the pipeline ...
 
 volumes:
-- name: dockersock
+- name: docker_sock
   host:
     path: /var/run/docker.sock
+
 
 
 
