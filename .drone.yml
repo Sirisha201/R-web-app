@@ -69,19 +69,35 @@ steps:
 #   commands:
 #     - R -e "shiny::runApp('/srv/shiny-server/myapp', port=3838, host='0.0.0.0')"
 
-- name: deploy
-  image: pelotech/drone-elasticbeanstalk
-  settings:
-    access_key:
-      from_secret: aws_access_key_id
-    secret_key:
-      from_secret: aws_secret_access_key
-    region: us-east-1 # Update this to your region
-    application: my-shiny-app
-    env_name: MyShinyApp-env
-    version_label: ${DRONE_COMMIT_SHA}
-    description: ${DRONE_COMMIT_MESSAGE}
-    s3_bucket: elasticbeanstalk-us-east-1-312388070267
+steps:
+  - name: pull-and-push
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY
+      S3_BUCKET:
+        from_secret: AWS_S3_BUCKET
+    commands:
+      - aws configure set default.region us-east-1 # Set your desired AWS region
+      - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo
+      - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+      - docker save -o image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest # Save the Docker image as a tarball
+      - aws s3 cp image.tar s3://S3_BUCKET/image.tar
+# - name: deploy
+#   image: pelotech/drone-elasticbeanstalk
+#   settings:
+#     access_key:
+#       from_secret: aws_access_key_id
+#     secret_key:
+#       from_secret: aws_secret_access_key
+#     region: us-east-1 # Update this to your region
+#     application: my-shiny-app
+#     env_name: MyShinyApp-env
+#     version_label: ${DRONE_COMMIT_SHA}
+#     description: ${DRONE_COMMIT_MESSAGE}
+#     s3_bucket: elasticbeanstalk-us-east-1-312388070267
     # zip_file: path-to-your-app.zip # Path to your app zipped
 
 volumes:
