@@ -16,7 +16,8 @@ steps:
   group: build
   image: plugins/ecr
   region: eu-north-1
-  registry: 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo
+  repo: rshiny-repo
+  registry: 312388070267.dkr.ecr.eu-north-1.amazonaws.com
   environment:
     AWS_ACCESS_KEY_ID:
       from_secret: AWS_ACCESS_KEY_ID
