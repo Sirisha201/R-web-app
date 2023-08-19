@@ -6,14 +6,21 @@ workspace:
   path: shared
 
 steps:
-- name: pull-image-from-ecr
-  image: docker:19.03
+- name: Pull step
+  image: kudato/drone-ecr-pull
   volumes:
-    - name: dockersock
-      path: /var/run/docker.sock
-  commands:
-    - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
-    - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+  - name: docker
+    path: /var/run/docker.sock
+  settings:
+    region: us-east-1
+    access_key:
+      from_secret: AWS_ACCESS_KEY_ID
+    secret_key:
+      from_secret: AWS_SECRET_ACCESS_KEY
+    images: [
+      "312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest",
+    ]
+  
 
 - name: save-docker-image
   image: docker:19.03
