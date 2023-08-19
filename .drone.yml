@@ -18,7 +18,7 @@ steps:
       from_secret: AWS_SECRET_ACCESS_KEY
   commands:
     - apk add --update docker
-    - echo $(aws ecr get-login-password --region eu-north-1) | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
+    - echo $(aws ecr get-login) | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
     - docker save -o /workspace/shared/image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
 
