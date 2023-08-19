@@ -18,9 +18,10 @@ steps:
   region: eu-north-1
   registry: 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo
   environment:
-    - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-    - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-  secrets: [AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY]
+    AWS_ACCESS_KEY_ID:
+      from_secret: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: AWS_SECRET_ACCESS_KEY
   tags: ${DRONE_COMMIT: 0: 1}
   when:
     branch: main
