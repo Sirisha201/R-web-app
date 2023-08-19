@@ -41,7 +41,8 @@ steps:
     images: [
       "312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest",
     ]
-  commands: docker ps
+  commands: 
+  - docker ps
 
 # - name: pull-and-test
 #   image: docker:dind
