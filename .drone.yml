@@ -2,22 +2,52 @@ kind: pipeline
 name: default
 
 steps:
-- name: build
-  image: docker:dind
-  volumes:
-    - name: dockersock
-      path: /var/run/docker.sock
+# - name: build
+#   group: build
+#   image: docker:dind
+#   volumes:
+#     - name: dockersock
+#       path: /var/run/docker.sock
+#   commands:
+#     - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
+#     - docker build -t 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1 .
+#     - docker push 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1
+- name: build and push
+  group: build
+  image: plugins/ecr
+  region: eu-north-1
+  registry: 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo
+  environment:
+    - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+  secrets: [AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY]
+  dockerfile: ./Dockerfile
+  tags: ${DRONE_COMMIT: 0: 1}
+  when:
+    branch: main
+    event: push
+
+- name: pull-and-test
+  image: docker
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: AWS_SECRET_ACCESS_KEY
   commands:
-    - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
-    - docker build -t 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1 .
-    - docker push 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:1
+    - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:${DRONE_COMMIT:0:1}
+    - docker run -d -p 8080:80 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:${DRONE_COMMIT:0:1}
+    - docker ps
+  when:
+    branch: main
+    event: push
 
 
-- name: test
-  image: my-shiny-app:latest
-  # If you have tests, run them here
-  commands:
-    - R -e "shiny::runApp('/srv/shiny-server/myapp', port=3838, host='0.0.0.0')"
+# - name: test
+#   image: my-shiny-app:latest
+#   # If you have tests, run them here
+#   commands:
+#     - R -e "shiny::runApp('/srv/shiny-server/myapp', port=3838, host='0.0.0.0')"
 
 - name: deploy
   image: pelotech/drone-elasticbeanstalk
