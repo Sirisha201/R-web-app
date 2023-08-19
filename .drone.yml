@@ -22,10 +22,11 @@ steps:
       from_secret: AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY:
       from_secret: AWS_SECRET_ACCESS_KEY
-  tags: ${DRONE_COMMIT: 0: 1}
+  tags: [${DRONE_COMMIT:0:1}]
   when:
     branch: main
     event: push
+
 
 - name: pull-and-test
   image: docker
