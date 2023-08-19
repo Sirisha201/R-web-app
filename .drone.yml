@@ -5,28 +5,48 @@ workspace:
   base: /workspace
   path: shared
 
-steps:
-- name: pull-and-save-image
-  image: python:3.8-alpine
-  volumes:
-  - name: docker_sock
-    path: /var/run/docker.sock
-  environment:
-    AWS_ACCESS_KEY_ID:
-      from_secret: AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY:
-      from_secret: AWS_SECRET_ACCESS_KEY
-    S3_BUCKET:
-      from_secret: AWS_S3_BUCKET
-  commands:
-    - apk add --update docker
-    - apk add --update python3 py3-pip
-    - pip3 install --upgrade pip
-    - pip3 install awscli
-    - echo $(aws ecr get-login-password --region eu-north-1) | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
-    - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
-    - docker save -o /workspace/shared/image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
-    - aws s3 cp /workspace/shared/image.tar s3://$S3_BUCKET/
+# steps:
+# - name: pull-and-save-image
+#   image: python:3.8-alpine
+#   volumes:
+#   - name: docker_sock
+#     path: /var/run/docker.sock
+#   environment:
+#     AWS_ACCESS_KEY_ID:
+#       from_secret: AWS_ACCESS_KEY_ID
+#     AWS_SECRET_ACCESS_KEY:
+#       from_secret: AWS_SECRET_ACCESS_KEY
+#     S3_BUCKET:
+#       from_secret: AWS_S3_BUCKET
+#   commands:
+#     - apk add --update docker
+#     - apk add --update python3 py3-pip
+#     - pip3 install --upgrade pip
+#     - pip3 install awscli
+#     - echo $(aws ecr get-login-password --region eu-north-1) | docker login --username AWS --password-stdin 312388070267.dkr.ecr.eu-north-1.amazonaws.com
+#     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+#     - docker save -o /workspace/shared/image.tar 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+#     - aws s3 cp /workspace/shared/image.tar s3://$S3_BUCKET/
+
+  - name: deploy
+    image: amazonlinux:2
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY
+    commands:
+      - yum install -y unzip
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip awscliv2.zip
+      - sudo ./aws/install
+      - aws --version
+      # Assuming you have the Dockerrun.aws.json file in your repository
+      - aws s3 cp Dockerrun.aws.json s3://$S3_BUCKET/Dockerrun.aws.json
+      # Create new application version
+      - aws elasticbeanstalk create-application-version --application-name my-shiny-app --version-label latest --source-bundle S3Bucket="elasticbeanstalk-us-east-1-312388070267",S3Key="Dockerrun.aws.json"
+      # Update the environment to use the new version
+      - aws elasticbeanstalk update-environment --environment-name MyShinyApp-env --version-label latest
 
 volumes:
 - name: docker_sock
