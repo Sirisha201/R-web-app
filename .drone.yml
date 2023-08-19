@@ -27,24 +27,39 @@ steps:
 #     tags:
 #       - latest  # Additional tags you want to apply to the image
 
-
-- name: pull-and-test
-  image: docker:dind
-  environment:
-    AWS_ACCESS_KEY_ID:
-      from_secret: AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY:
-      from_secret: AWS_SECRET_ACCESS_KEY
+- name: Pull step
+  image: kudato/drone-ecr-pull
   volumes:
-    - name: dockersock
-      path: /var/run/docker.sock
-  commands:
-    - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
-    - docker run -d -p 8080:80 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
-    - docker ps
-  when:
-    branch: main
-    event: push
+  - name: docker
+    path: /var/run/docker.sock
+  settings:
+    region: us-east-1
+    access_key:
+      from_secret: AWS_ACCESS_KEY_ID
+    secret_key:
+      from_secret: AWS_SECRET_ACCESS_KEY
+    images: [
+      "312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest",
+    ]
+  commands: docker ps
+
+# - name: pull-and-test
+#   image: docker:dind
+#   environment:
+#     AWS_ACCESS_KEY_ID:
+#       from_secret: AWS_ACCESS_KEY_ID
+#     AWS_SECRET_ACCESS_KEY:
+#       from_secret: AWS_SECRET_ACCESS_KEY
+#   volumes:
+#     - name: dockersock
+#       path: /var/run/docker.sock
+#   commands:
+#     - docker pull 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+#     - docker run -d -p 8080:80 312388070267.dkr.ecr.eu-north-1.amazonaws.com/rshiny-repo:latest
+#     - docker ps
+#   when:
+#     branch: main
+#     event: push
 
 
 # - name: test
